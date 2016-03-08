@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import sys
 from string  import punctuation
 from difflib import SequenceMatcher as seqman
 
@@ -72,6 +71,7 @@ def fuzzy_grep(needle, haystack, tolerance=.3, context_lines=2, punc_is_junk=Tru
             line,
             needle
         )
+
         ratio  = s.ratio()
         exact  = needle in line
         approx = round(ratio + tolerance)
@@ -102,8 +102,9 @@ def fuzzy_grep(needle, haystack, tolerance=.3, context_lines=2, punc_is_junk=Tru
     return matches
 
 def demo():
+    from sys import argv
     output = []
-    results = fuzzy_files(sys.argv[1], sys.argv[2:])
+    results = fuzzy_files(argv[1], argv[2:])  # a string as arg #1 and filenames as the rest
 
     for idx, fname in enumerate(results):
         ms = results[fname]
