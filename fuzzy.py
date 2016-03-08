@@ -23,7 +23,7 @@ def _sort_and_join(s):
     return [x, "".join(x)]
 
 
-def fuzzy_files(needle, haystack_of_files, tolerance=.4, context_lines=2, punc_is_junk=True, junk_func=None):
+def fuzzy_files(needle, haystack_of_files, tolerance=.4, context_lines=2, punc_is_junk=True, junk_func=None, case_sens=case_sens):
 
     metamatches = {}
 
@@ -34,7 +34,7 @@ def fuzzy_files(needle, haystack_of_files, tolerance=.4, context_lines=2, punc_i
         t.close()
 
         metamatches[f] = fuzzy_grep(
-            needle, c, tolerance=tolerance, context_lines=context_lines, punc_is_junk=punc_is_junk, junk_func=junk_func)
+            needle, c, tolerance=tolerance, context_lines=context_lines, punc_is_junk=punc_is_junk, junk_func=junk_func, case_sens=case_sens)
 
     return metamatches
 
@@ -45,7 +45,7 @@ def fuzzy_grep(needle, haystack, tolerance=.4, context_lines=2, punc_is_junk=Tru
     context_lines = lines of context surrounding each match to supply   -- int          default: 2
     punc_is_junk  = whether to consider string.punctuation in fuzziness -- bool         default: True
     junk_func     = a caller-supplied junk-decider                      -- function     default: None
-    """
+    case_sens     = whether case should be considered in matches        -- bool         default: False"""
 
     matches = []
 
