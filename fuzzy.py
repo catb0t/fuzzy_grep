@@ -129,4 +129,3 @@ def demo():
 
     print("".join(output))
 
-demo()
