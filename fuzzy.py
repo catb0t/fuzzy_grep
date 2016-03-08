@@ -23,7 +23,7 @@ def _sort_and_join(s):
     return [x, "".join(x)]
 
 
-def fuzzy_files(needle, haystack_of_files, tolerance=.4, context_lines=2, punc_is_junk=True, junk_func=None, case_sens=case_sens):
+def fuzzy_files(needle, haystack_of_files, tolerance=.4, context_lines=2, punc_is_junk=True, junk_func=None, case_sens=False):
 
     metamatches = {}
 
@@ -128,4 +128,3 @@ def demo():
             )
 
     print("".join(output))
-
