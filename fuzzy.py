@@ -21,24 +21,18 @@ class Match():
     def misc(self): return self.misc_data
 
 
-def is_subset(a, b):
-    """a slow (iterative) dupe-preserving sorting "set",
-    for mutual membership tests (set overloads &, but removes dupes)"""
-    c = []
-    a, b = sorted(list(a)), sorted(list(b))
-    (l, maxl, s, minl) = {
-        True:  (a, len(a), b, len(b)),
-        False: (b, len(b), a, len(a))
-    }[ a >= b ]
+def membertester(list_a, list_b):
+    """a slow (iterative) dupe-preserving sorting subset tester,
+    for mutual membership tests (like set overloads &)"""
+    common = []
+    shorter, longer = sorted([list_a, list_b], key=len)
 
-    for i in range(maxl):
-        try:
-            if s.count(l[i]) >= l.count(l[i]):
-                c.append(a[i])
+    for item in longer:
+        if shorter.count(item) >= longer.count(item):
+            common.append(item)
 
-        except IndexError:
-            pass
-    return c
+    return common
+
 
 def fuzzy_files(needle, file_haystack, **kwargs):
     """fuzzy grep in files. turns kwargs in to fuzzy_files"""
@@ -96,9 +90,9 @@ def fuzzy_grep(needle,       haystack,
                 coef = len(needle) / len(line)
             except ZeroDivisionError:
                 coef = 0
-            tolerance = round(tolerance + tolerance * (coef * 2), 2)
+            tolerance = round(tolerance + tolerance * (coef * 4), 2)
 
-        fuzziness = is_subset(needle, line)
+        fuzziness = membertester(needle, line)
 
         s = seqmat(
             junk,
@@ -109,7 +103,6 @@ def fuzzy_grep(needle,       haystack,
         exact = (needle in line) or ("".join(sorted(needle)) in "".join(sorted(line)))
         apprx = ratio + tolerance
         found = exact or apprx > APPROX_THRESHOLD
-        #print(round(ratio, 2), round(tolerance, 2), round(apprx, 2), bool(apprx), bool(found))
         if found and fuzziness == sorted(needle):
             try:
                 matches.append(
@@ -155,4 +148,3 @@ def demo():
 
 if __name__ == '__main__' and DEBUG:
     demo()
-    print(len(fuzzy_files(argv[1], argv[2:])[argv[2]]))
