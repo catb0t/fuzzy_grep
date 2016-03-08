@@ -39,7 +39,7 @@ def fuzzy_files(needle, haystack_of_files, tolerance=.4, context_lines=2, punc_i
     return metamatches
 
 
-def fuzzy_grep(needle, haystack, tolerance=.3, context_lines=2, punc_is_junk=True, junk_func=None):
+def fuzzy_grep(needle, haystack, tolerance=.4, context_lines=2, punc_is_junk=True, junk_func=None, case_sens=False):
     """fuzzily grep, finding needle in haystack.split('\n')
     tolerance     = levenshtein tolerance for SequenceMatcher ratio     -- float or int default: .4
     context_lines = lines of context surrounding each match to supply   -- int          default: 2
@@ -48,6 +48,9 @@ def fuzzy_grep(needle, haystack, tolerance=.3, context_lines=2, punc_is_junk=Tru
     """
 
     matches = []
+
+    if not case_sens:
+        needle = needle.lower()
 
     if punc_is_junk:
         junk = lambda x: set(punctuation) & set(x)
@@ -61,6 +64,9 @@ def fuzzy_grep(needle, haystack, tolerance=.3, context_lines=2, punc_is_junk=Tru
     lns = haystack.split("\n")
 
     for num, line in enumerate(lns):
+
+        if not case_sens:
+            line = line.lower()
 
         s_line, _ = _sort_and_join(line)
 
@@ -122,3 +128,5 @@ def demo():
             )
 
     print("".join(output))
+
+demo()
