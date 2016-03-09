@@ -47,15 +47,18 @@ def fuzzy_grep(needle,       haystack,
         PUNC_IS_JUNK=True,   JUNK_FUNC=None,
         CONSIDER_CASE=False, ADJUST_BYLEN=True, APPROX_THRESHOLD=.45):
     """fuzzily grep, finding needle in haystack.split('\n')
-    tolerance_base = base tolerance for seqman ratio       :float default: .4
-    context_lines  = lines surrounding each match to supply:int   default: 2
-    punc_is_junk   = consider punctuation in fuzziness     :bool  default: True
-    junk_func      = a caller-supplied junk-decider        :func  default: None
-    case_sens      = consider case in matches              :bool  default: False
-    adjust_bylen   = adjust using line len                 :bool  default: True"""
+
+    TOLERANCE_BASE = base tolerance for seqman ratio       :float default: .4
+    CONTEXT_LINES  = lines surrounding each match to supply:int   default: 2
+    PUNC_IS_JUNK   = consider punctuation in fuzziness     :bool  default: True
+    JUNK_FUNC      = a caller-supplied junk-decider        :func  default: None
+    CONSIDER_CASE  = consider case in matches              :bool  default: False
+    ADJUST_BYLEN   = adjust using line len                 :bool  default: True
+    """
 
     matches = []
 
+    # human-usability - the range is from 1 to n, so increment n.
     CONTEXT_LINES += 1
 
     if PUNC_IS_JUNK:
