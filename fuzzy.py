@@ -22,9 +22,10 @@ class Match():
     def misc(self): return self.misc_data
 
 
-def intersect_dup(a, b):
-    lg, sh = sorted([a, b], key=len)
-    return [i for i in sorted(lg) if i in set(sh)]
+def intersect(a, b):
+    "nondeuplicating intersection"
+    from collections import Counter
+    return list((Counter(a) & Counter(b)).elements())
 
 def fuzzy_files(needle, file_haystack, **kwargs):
     """fuzzy grep in files. turns kwargs in to fuzzy_files"""
@@ -87,7 +88,7 @@ def fuzzy_grep(needle,       haystack,
                 coef = 0
             tolerance = round(tolerance + tolerance * (coef * 4), 2)
 
-        fuzziness = intersect_dup(needle, line)
+        fuzziness = intersect(needle, line)
 
         s = seqmat(
             junk,
