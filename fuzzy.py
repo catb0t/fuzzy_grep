@@ -7,7 +7,8 @@ DEBUG = True
 
 class Match():
 
-    def __init__(self, line, line_no, match_type, prectxt, postctxt, misc=None):
+    def __init__(self, line, line_no, match_type,
+                 prectxt, postctxt, misc=None):
         (self.line, self.line_no,
             self.match_type, self.prectxt,
                 self.postctxt, self.misc_data) = (line, line_no,
@@ -21,18 +22,9 @@ class Match():
     def misc(self): return self.misc_data
 
 
-def membertester(list_a, list_b):
-    """a slow (iterative) dupe-preserving sorting subset tester,
-    for mutual membership tests (like set overloads &)"""
-    common = []
-    shorter, longer = sorted([list_a, list_b], key=len)
-
-    for item in longer:
-        if shorter.count(item) >= longer.count(item):
-            common.append(item)
-
-    return common
-
+def intersect_dup(a, b):
+    lg, sh = sorted([a, b], key=len)
+    return [i for i in sorted(lg) if i in set(sh)]
 
 def fuzzy_files(needle, file_haystack, **kwargs):
     """fuzzy grep in files. turns kwargs in to fuzzy_files"""
@@ -55,12 +47,12 @@ def fuzzy_grep(needle,       haystack,
         PUNC_IS_JUNK=True,   JUNK_FUNC=None,
         CONSIDER_CASE=False, ADJUST_BYLEN=True, APPROX_THRESHOLD=.45):
     """fuzzily grep, finding needle in haystack.split('\n')
-    tolerance_base = base levenshtein tolerance for seqman ratio         :float default: .4
-    context_lines  = lines of context surrounding each match to supply   :int   default: 2
-    punc_is_junk   = whether to consider string.punctuation in fuzziness :bool  default: True
-    junk_func      = a caller-supplied junk-decider                      :func  default: None
-    case_sens      = should case be considered in matches                :bool  default: False
-    adjust_bylen   = adjust tolerance using ratio of needle to line len  :bool  default: True"""
+    tolerance_base = base tolerance for seqman ratio       :float default: .4
+    context_lines  = lines surrounding each match to supply:int   default: 2
+    punc_is_junk   = consider punctuation in fuzziness     :bool  default: True
+    junk_func      = a caller-supplied junk-decider        :func  default: None
+    case_sens      = consider case in matches              :bool  default: False
+    adjust_bylen   = adjust using line len                 :bool  default: True"""
 
     matches = []
 
@@ -92,7 +84,7 @@ def fuzzy_grep(needle,       haystack,
                 coef = 0
             tolerance = round(tolerance + tolerance * (coef * 4), 2)
 
-        fuzziness = membertester(needle, line)
+        fuzziness = intersect_dup(needle, line)
 
         s = seqmat(
             junk,
@@ -103,7 +95,8 @@ def fuzzy_grep(needle,       haystack,
         exact = (needle in line) or ("".join(sorted(needle)) in "".join(sorted(line)))
         apprx = ratio + tolerance
         found = exact or apprx > APPROX_THRESHOLD
-        if found and fuzziness == sorted(needle):
+        inlin = fuzziness == sorted(needle)
+        if found and inlin:
             try:
                 matches.append(
                     Match(
@@ -144,7 +137,7 @@ def demo():
                 "\t" + "\n\t".join(item.postctxt) + "\n"
             )
 
-    print("".join(output))
+    print("".join(output), "\n{}\nprocessed {} matches".format("-" * 100, len(output)))
 
 if __name__ == '__main__' and DEBUG:
     demo()
