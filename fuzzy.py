@@ -19,7 +19,7 @@ class Match():
 
     def match(self): return self.matchinfo
 
-    def misc(self): return self.misc_data
+    def misc(self):  return self.misc_data
 
 
 def intersect(a, b):
@@ -100,7 +100,7 @@ def fuzzy_grep(needle,       haystack,
         exact = (needle in line) or ("".join(sorted(needle)) in "".join(sorted(line)))
         apprx = ratio + tolerance
         found = exact or apprx > APPROX_THRESHOLD
-        inlin = fuzziness == sorted(needle)
+        inlin = sorted(fuzziness) == sorted(needle)
         if found and inlin:
             try:
                 matches.append(
@@ -122,10 +122,10 @@ def fuzzy_grep(needle,       haystack,
 
     return matches
 
-from sys import argv
 def demo():
     output = []
-    results = fuzzy_files(argv[1], argv[2:])  # a string as arg #1 and filenames as the rest
+    needle, haystacks = argv[1], argv[2:]
+    results = fuzzy_files(needle, haystacks)  # a string as arg #1 and filenames as the rest
 
     for idx, fname in enumerate(results):
         ms = results[fname]
@@ -145,4 +145,6 @@ def demo():
     print("".join(output), "\n{}\nprocessed {} matches".format("-" * 100, len(output)))
 
 if __name__ == '__main__' and DEBUG:
+    from sys import argv
+    #print(argv[1], argv[2:])
     demo()
