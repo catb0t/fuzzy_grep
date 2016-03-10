@@ -99,12 +99,12 @@ def fuzzy_grep(needle,            haystack,
 
         tolerance = TOLERANCE_BASE
 
-        if ADJUST_BYLEN and 0 != ndl_len:
+        if ADJUST_BYLEN and ndl_len:
             hstk = len(line)
             # caching
             if hstk in bylen_vals.keys():
                 tolerance = bylen_vals[hstk]
-            elif 0 != hstk:
+            elif hstk:
                 # seems to be a good algorithm for adjustment based on line len
                 tolerance = round(tolerance + tolerance * ((ndl_len / hstk) * 4), 2)
                 bylen_vals[hstk] = tolerance
