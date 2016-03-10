@@ -44,29 +44,46 @@ def fuzzy_files(needle, file_haystack, **kwargs):
     return metamatches
 
 
-def fuzzy_grep(needle,       haystack,
-        TOLERANCE_BASE=.3,   CONTEXT_LINES=2,
-        PUNC_IS_JUNK=True,   JUNK_FUNC=None,
-        CONSIDER_CASE=False, ADJUST_BYLEN=True, APPROX_THRESHOLD=.45):
+def fuzzy_grep(needle,            haystack,
+        TOLERANCE_BASE   = .3,    CONTEXT_LINES = 2,
+        PUNC_IS_JUNK     = True,  JUNK_FUNC     = None,
+        CONSIDER_CASE    = False, ADJUST_BYLEN  = True,
+        APPROX_THRESHOLD = .5
+        ):
     """fuzzily grep, finding needle in haystack.split('\n')
+    warn: if these aren't properly tweaked, results will be 2fuzzy4u
 
-    TOLERANCE_BASE = base tolerance for seqman ratio       :float default: .4
-    CONTEXT_LINES  = lines surrounding each match to supply:int   default: 2
-    PUNC_IS_JUNK   = consider punctuation in fuzziness     :bool  default: True
-    JUNK_FUNC      = a caller-supplied junk-decider        :func  default: None
-    CONSIDER_CASE  = consider case in matches              :bool  default: False
-    ADJUST_BYLEN   = adjust using line len                 :bool  default: True
+    KWARG_CONSTANT   = description                          type  = default
+    TOLERANCE_BASE   = base tolerance for seqman ratio      float = .4
+    CONTEXT_LINES    = lines surrounding each match to give int   = 2
+    PUNC_IS_JUNK     = consider punctuation in fuzziness    bool  = True
+    JUNK_FUNC        = a caller-supplied junk-decider       func  = None
+    CONSIDER_CASE    = consider case in matches             bool  = False
+    ADJUST_BYLEN     = adjust using line len                bool  = True
+    APPROX_THRESHOLD = fuzziness threshold; tweak me!       float = .5?
     """
 
     matches = []
 
+    # case-preserver, for printing lines of context.
+    PCASE = {
+        "needle": needle,
+        "haystack": haystack,
+        "haystack_spl": haystack.split("\n"),
+    }
+
+    # caching
+    # the length of the needle won't change,
+    # but the length of the line will,
+    # and the same input line will yield the same output
+    ndl_len = len(needle)
+    bylen_vals = {}
+
     # human-usability - the range is from 1 to n, so increment n.
-    CONTEXT_LINES += 1
+    R_CONTEXT_LINES = range(1, CONTEXT_LINES + 1)
 
     if PUNC_IS_JUNK:
-        junk = (
-            lambda x: set(punc) & set(x)
-        )
+        junk = (lambda x: set(punc) & set(x))
     elif JUNK_FUNC is not None:
         junk = JUNK_FUNC
     else:
@@ -82,43 +99,56 @@ def fuzzy_grep(needle,       haystack,
 
         tolerance = TOLERANCE_BASE
 
-        if ADJUST_BYLEN:
-            try:
-                coef = len(needle) / len(line)
-            except ZeroDivisionError:
-                coef = 0
-            tolerance = round(tolerance + tolerance * (coef * 4), 2)
+        if ADJUST_BYLEN and 0 != ndl_len:
+            hstk = len(line)
+            # caching
+            if hstk in bylen_vals.keys():
+                tolerance = bylen_vals[hstk]
+            elif 0 != hstk:
+                # seems to be a good algorithm for adjustment based on line len
+                tolerance = round(tolerance + tolerance * ((ndl_len / hstk) * 4), 2)
+                bylen_vals[hstk] = tolerance
 
         fuzziness = intersect(needle, line)
 
-        s = seqmat(
-            junk,
-            line,
-            needle
-        )
+        s = seqmat(junk, line, needle)
+
         ratio = s.ratio()
         exact = (needle in line) or ("".join(sorted(needle)) in "".join(sorted(line)))
         apprx = ratio + tolerance
         found = exact or apprx > APPROX_THRESHOLD
         inlin = sorted(fuzziness) == sorted(needle)
         if found and inlin:
-            try:
-                matches.append(
-                    Match(
-                        line,
-                        idx,
-                        "exact" if exact else "fuzzy",
-                        [ ln for ln in [ ls[idx - i] for i in range(1, CONTEXT_LINES) ] ],
-                        [ ln for ln in [ ls[idx + i] for i in range(1, CONTEXT_LINES) ] ],
-                        misc={
-                            "seqmat": {"self": s, "ratio": ratio, "tolerance": tolerance, "tolerance_base": TOLERANCE_BASE},
-                            "misc": locals()
-                        }
-                    )
-                )
 
-            except IndexError:
-                pass
+            prectxt, postctxt = ([""], [""])
+
+            if (idx - 1) >= 0:
+                prectxt = []
+                for i in R_CONTEXT_LINES:
+                    try:
+                        prectxt.append(PCASE["haystack_spl"][idx - i])
+                    except IndexError:
+                        pass
+
+            if (idx + 1) <= len(ls):
+                postctxt = []
+                for i in R_CONTEXT_LINES:
+                    try:
+                        postctxt.append(PCASE["haystack_spl"][idx + i])
+                    except IndexError:
+                        pass
+
+            matches.append(
+                Match(
+                    line, idx,
+                    "exact" if exact else "fuzzy",
+                    prectxt, postctxt,
+                    misc = {
+                        "seqmat": {"self": s, "ratio": ratio, "tolerance": tolerance, "tolerance_base": TOLERANCE_BASE},
+                        "misc": locals()
+                    }
+                )
+            )
 
     return matches
 
