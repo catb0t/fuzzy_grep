@@ -125,18 +125,14 @@ def fuzzy_grep(needle,            haystack,
             if (idx - 1) >= 0:
                 prectxt = []
                 for i in R_CONTEXT_LINES:
-                    try:
+                    if idx - i >= 0:
                         prectxt.append(PCASE["haystack_spl"][idx - i])
-                    except IndexError:
-                        pass
 
             if (idx + 1) <= len(ls):
                 postctxt = []
                 for i in R_CONTEXT_LINES:
-                    try:
+                    if idx + i <= len(ls):
                         postctxt.append(PCASE["haystack_spl"][idx + i])
-                    except IndexError:
-                        pass
 
             matches.append(
                 Match(
