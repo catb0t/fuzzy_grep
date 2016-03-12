@@ -22,12 +22,6 @@ class Match():
     def misc(self):  return self.misc_data
 
 
-def intersect(a, b):
-    "nondeuplicating intersection"
-    from collections import Counter
-    return list((Counter(a) & Counter(b)).elements())
-
-
 def fuzzy_files(needle, file_haystack, **kwargs):
     """fuzzy grep in files. turns kwargs in to fuzzy_files"""
 
@@ -54,7 +48,7 @@ def fuzzy_grep(needle,            haystack,
     warn: if these aren't properly tweaked, results will be 2fuzzy4u
 
     KWARG_CONSTANT   = description                          type  = default
-    TOLERANCE_BASE   = base tolerance for seqman ratio      float = .4
+    TOLERANCE_BASE   = base tolerance for seqmat ratio      float = .4
     CONTEXT_LINES    = lines surrounding each match to give int   = 2
     PUNC_IS_JUNK     = consider punctuation in fuzziness    bool  = True
     JUNK_FUNC        = a caller-supplied junk-decider       func  = None
@@ -62,6 +56,8 @@ def fuzzy_grep(needle,            haystack,
     ADJUST_BYLEN     = adjust using line len                bool  = True
     APPROX_THRESHOLD = fuzziness threshold; tweak me!       float = .5?
     """
+
+    from collections import Counter
 
     matches = []
 
@@ -109,7 +105,8 @@ def fuzzy_grep(needle,            haystack,
                 tolerance = round(tolerance + tolerance * ((ndl_len / hstk) * 4), 2)
                 bylen_vals[hstk] = tolerance
 
-        fuzziness = intersect(needle, line)
+        # nondeduplicating membership tester, like set()
+        fuzziness = list((Counter(needle) & Counter(line)).elements())
 
         s = seqmat(junk, line, needle)
 
