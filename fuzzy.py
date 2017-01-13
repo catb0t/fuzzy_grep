@@ -71,7 +71,7 @@ def fuzzy_grep(needle,            haystack,
     # caching
     # the length of the needle won't change,
     # but the length of the line will,
-    # and the same input line will yield the same output
+    # and the same input line len will yield the same output
     ndl_len = len(needle)
     bylen_vals = {}
 
@@ -117,6 +117,7 @@ def fuzzy_grep(needle,            haystack,
         inlin = sorted(fuzziness) == sorted(needle)
         if found and inlin:
 
+            # object-existence insurance; not pointless
             prectxt, postctxt = ([""], [""])
 
             if (idx - 1) >= 0:
@@ -147,7 +148,7 @@ def fuzzy_grep(needle,            haystack,
 
 def demo():
     output = []
-    needle, haystacks = argv[1], argv[2:]
+    needle, haystacks = argv[1], argv[2].split(" ")
     results = fuzzy_files(needle, haystacks)  # a string as arg #1 and filenames as the rest
 
     for idx, fname in enumerate(results):
